@@ -45,7 +45,7 @@ export const CheckBookingAvailability = async (req, res) => {
 export const bookingCreate = async (req, res) => {
   console.log("BookingCreate route hit");
   try {
-    const { property, checkInDate, checkOutDate, guests } = req.body;
+    const { property, checkInDate, checkOutDate, guests, paymentMethod } = req.body;
     const user = req.user?._id;
 
     if (!user) return res.status(401).json({ success: false, message: "User not authenticated" });
@@ -53,60 +53,73 @@ export const bookingCreate = async (req, res) => {
       return res.status(400).json({ success: false, message: "Missing required fields" });
     }
 
-    // Check availability
-    const isAvailable = await checkAvailability({ property, checkInDate, checkOutDate });
-    if (!isAvailable) return res.status(400).json({ success: false, message: "Property not available for selected dates" });
-
     const propertyData = await Property.findById(property).populate("agency");
     if (!propertyData) return res.status(404).json({ success: false, message: "Property not found" });
 
     const checkIn = new Date(checkInDate);
     const checkOut = new Date(checkOutDate);
+
+    if (isNaN(checkIn.getTime()) || isNaN(checkOut.getTime())) {
+      return res.status(400).json({ success: false, message: "Invalid check-in or check-out date" });
+    }
+
+    // Check availability
+    const bookings = await Booking.find({
+      property,
+      checkInDate: { $lte: checkOut },
+      checkOutDate: { $gte: checkIn },
+    });
+
+    if (bookings.length > 0) {
+      return res.status(400).json({ success: false, message: "Property not available for selected dates" });
+    }
+
     const nights = Math.ceil((checkOut - checkIn) / (1000 * 3600 * 24));
     const totalPrice = propertyData.price.rent * nights;
 
     const booking = await Booking.create({
       user,
       property,
-      agency: propertyData.agency._id,
+      agency: propertyData.agency?._id || null,
       guests: Number(guests),
       checkInDate: checkIn,
       checkOutDate: checkOut,
       totalPrice,
       status: "pending",
       isPaid: false,
-      paymentMethod: "Pay at Check-in",
+      paymentMethod: paymentMethod || "Pay at Check-in",
     });
 
-    // Send email
-    const mailOptions = {
-      from: process.env.SENDER_EMAIL,
-      to: req.user.email,
-      subject: "Property Booking/Sale",
-      html: `
-        <h2>Your Booking Details</h2>
-        <p>Thank you for your booking! Below are your booking details</p>
-        <ul>
-          <li><strong>Booking ID:</strong> ${booking._id}</li>
-          <li><strong>Agency Name:</strong> ${propertyData.agency.name}</li>
-          <li><strong>Location:</strong> ${propertyData.address}</li>
-          <li><strong>Check-In:</strong> ${booking.checkInDate.toDateString()}</li>
-          <li><strong>Total Amount:</strong> ${process.env.CURRENCY || '$'} ${booking.totalPrice} for ${nights} night(s)</li>
-        </ul>
-        <p>We are excited to welcome you soon.</p>
-        <p>Need to change something? Contact us.</p>
-      `,
-    };
-
-    await transporter.sendMail(mailOptions);
+    // Send email (optional)
+    try {
+      if (req.user.email) {
+        await transporter.sendMail({
+          from: process.env.SENDER_EMAIL,
+          to: req.user.email,
+          subject: "Booking Confirmation",
+          html: `
+            <h2>Booking Details</h2>
+            <p>Booking ID: ${booking._id}</p>
+            <p>Property: ${propertyData.title}</p>
+            <p>Agency: ${propertyData.agency?.name || "N/A"}</p>
+            <p>Check-in: ${checkIn.toDateString()}</p>
+            <p>Check-out: ${checkOut.toDateString()}</p>
+            <p>Total Price: ${totalPrice}</p>
+          `,
+        });
+      }
+    } catch (emailError) {
+      console.error("Email failed:", emailError.message);
+    }
 
     console.log("Booking created:", booking);
-    res.status(201).json({ success: true, message: "Booking Created", booking });
+    return res.status(201).json({ success: true, message: "Booking Created", booking });
   } catch (error) {
     console.error("Booking creation failed:", error);
-    res.status(500).json({ success: false, message: "Failed to create booking", error: error.message });
+    return res.status(500).json({ success: false, message: "Failed to create booking", error: error.message });
   }
 };
+
 
 // ----------------- Get User Bookings -----------------
 export const getUserBookings = async (req, res) => {
