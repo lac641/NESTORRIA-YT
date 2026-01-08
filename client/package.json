@@ -3,12 +3,12 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "node ./node_modules/vite/bin/vite.js build",
+  "lint": "eslint .",
+  "preview": "vite preview"
+},
   "dependencies": {
     "@clerk/clerk-react": "^5.53.4",
     "@emailjs/browser": "^4.4.1",
