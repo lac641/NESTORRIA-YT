@@ -32,7 +32,7 @@ const MyBookings = () => {
 
   // ---------------- WhatsApp Contact ----------------
   const openWhatsApp = (booking) => {
-    const phoneNumber = '2349154452159' // replace with agency or business number
+    const phoneNumber = '2348063969597' // replace with agency or business number
 
     const message = `
 Hello, I want to proceed with this booking.
