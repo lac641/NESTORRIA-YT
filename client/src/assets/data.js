@@ -65,6 +65,10 @@ import blog5 from "../assets/blogs/blog5.jpg";
 import blog6 from "../assets/blogs/blog6.jpg";
 import blog7 from "../assets/blogs/blog7.jpg";
 import blog8 from "../assets/blogs/blog8.jpg";
+import photoblog1 from "../assets/photo-1494526585095-c41746248156.avif";
+import photoblog2 from "../assets/photo-1560518883-ce09059eeffa.avif";
+import photoblog3 from "../assets/photo-1564767609342-620cb19b2357.avif";
+import photoblog4 from "../assets/photo-1592595896551-12b371d546d5.avif"
 
 
 export const assets = {
@@ -116,7 +120,11 @@ export const assets = {
     about,
     faq,
     uploadIcon,
-    nestoria
+    nestoria,
+    photoblog1,
+    photoblog2,
+    photoblog3,
+    photoblog4
 }
 
 export const cities = [

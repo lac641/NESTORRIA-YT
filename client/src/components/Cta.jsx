@@ -1,7 +1,16 @@
 import React from 'react'
 import { assets } from '../assets/data'
+import { useNavigate } from 'react-router-dom'
 
 const Cta = () => {
+
+    const navigate = useNavigate()
+
+    const handleNavigate = () => {
+        navigate('/contact')
+    }
+
+
   return (
     <section className="bg-[#fffbee] pt-16 xl:pt-22">
       <div className="max-padd-container mx-2 md:mx-auto p-px ">
@@ -15,7 +24,7 @@ const Cta = () => {
                 and Real Support !
                 </h2>
                 <p className="text-slate-500 mt-2 max-w-lg max-md:text-sm">Achieve your goals faster with personalized strategies, hands-on support, and results that speak for themselves</p>
-                <button type="button" className="btn-secondary mt-4"> 
+                <button type="button" className="btn-secondary mt-4" onClick={handleNavigate}> 
                     Contact Us Today
                 </button>
             </div>
