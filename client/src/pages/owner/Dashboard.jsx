@@ -119,7 +119,7 @@ const Dashboard = () => {
               </div>
               <div>{currency}{booking.totalPrice}</div>
               <span className={booking.isPaid ? "text-green-600" : "text-red-500"}>
-                {booking.isPaid ? "Completed" : "Pending"}
+                {booking.isPaid ? "Contact Now" : "Contact Now"}
               </span>
             </div>
           ))}
