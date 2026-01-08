@@ -8,9 +8,9 @@ bookingRouter.post('/check-availability', CheckBookingAvailability)
 bookingRouter.post('/book',authUser, bookingCreate)
 bookingRouter.get('/user', authUser, getUserBookings)
 bookingRouter.get('/agency',authUser, getAgencyBookings)
-router.get(
+bookingRouter.get(
   "/bookings/:bookingId/whatsapp",
-  auth,
+  authUser,
   getBookingWhatsAppLink
 );
 
