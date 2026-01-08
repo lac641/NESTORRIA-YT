@@ -155,3 +155,64 @@ export const getAgencyBookings = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to get agency bookings", error: error.message });
   }
 };
+
+
+// ----------------- Get WhatsApp Contact Link -----------------
+export const getBookingWhatsAppLink = async (req, res) => {
+  try {
+    const { bookingId } = req.params;
+
+    const booking = await Booking.findById(bookingId)
+      .populate("property agency user");
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: "Booking not found",
+      });
+    }
+
+    // Use agency phone if available, else fallback
+    const phoneNumber =
+      booking.agency?.phone || process.env.DEFAULT_WHATSAPP_NUMBER;
+
+    if (!phoneNumber) {
+      return res.status(400).json({
+        success: false,
+        message: "No WhatsApp number configured",
+      });
+    }
+
+    const message = `
+Hello, I want to proceed with this booking.
+
+Booking ID: ${booking._id}
+Property: ${booking.property.title}
+Check-in: ${booking.checkInDate.toDateString()}
+Check-out: ${booking.checkOutDate.toDateString()}
+Guests: ${booking.guests}
+Total: ${booking.totalPrice}
+
+Property Image:
+${booking.property.images?.[0]}
+
+Address:
+${booking.property.address}
+    `;
+
+    const whatsappLink = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
+      message
+    )}`;
+
+    return res.json({
+      success: true,
+      whatsappLink,
+    });
+  } catch (error) {
+    console.error("getBookingWhatsAppLink error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to generate WhatsApp link",
+    });
+  }
+};
